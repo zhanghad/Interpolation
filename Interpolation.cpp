@@ -40,7 +40,7 @@ int main()
 	Mat img_lost_mask=deletePixel(img_src, img_lost, 0.90);//随机丢点
 
     //Mat img_result = interpolation_nearest(img_damage, img_mask, 1);
-    Mat img_result=interpolation_rbf(img_lost, img_lost_mask, 1,20);
+    Mat img_result=interpolation_rbf(img_lost, img_lost_mask, 1,10);
 	
     //Mat img_result = interpolation_nearest(img_lost, img_lost_mask, 1);
     
@@ -160,86 +160,89 @@ Mat interpolation_nearest(const Mat&image, const Mat& mask,int flag) {
 	for(int i=0;i<result.rows;i++) {
         for (int j = 0; j < result.cols; j++) {
             if(mask.at<uchar>(i,j)==255) {
+                //城市距离
+                if(flag==1) {
+                    bool found = false;
+                	//由近至远寻找
+                    for (int distance = 1;; distance++) {
+                        //上
+                        if (i - distance >= 0) {
+                            for (int y1 = i - distance; y1 <= i + distance; y1++) {
+                                if (y1 < 0)
+                                    continue;
+                                if (y1 >= result.cols)
+                                    break;
+                                if (mask.at<uchar>(i - distance, y1) == 0) {
+                                    result.at<Vec3b>(i, j) = image.at<Vec3b>(i - distance, y1);
+                                    found = true;
+                                    break;
+                                }
 
-            	//城市距离
-            	if(flag==1) {
+                            }
+                        }
+                        if (found)
+                            break;
+
+                        //下
+                        if (i + distance < result.rows) {
+                            for (int y2 = i - distance; y2 <= i + distance; y2++) {
+                                if (y2 < 0)
+                                    continue;
+                                if (y2 >= result.cols)
+                                    break;
+                                if (mask.at<uchar>(i + distance, y2) == 0) {
+                                    result.at<Vec3b>(i, j) = image.at<Vec3b>(i + distance, y2);
+                                    found = true;
+                                    break;
+                                }
+
+                            }
+                        }
+                        if (found)
+                            break;
+
+                        //右
+                        if (j + distance < result.cols) {
+                            for (int x2 = i - distance + 1; x2 <= i + distance - 1; x2++) {
+                                if (x2 < 0)
+                                    continue;
+                                if (x2 >= result.rows)
+                                    break;
+                                if (mask.at<uchar>(x2, j + distance) == 0) {
+                                    result.at<Vec3b>(i, j) = image.at<Vec3b>(x2, j + distance);
+                                    found = true;
+                                    break;
+                                }
+
+                            }
+
+                        }
+                        if (found)
+                            break;
+
+                        //左
+                        if (j - distance >= 0) {
+                            for (int x1 = i - distance + 1; x1 <= i + distance - 1; x1++) {
+                                if (x1 < 0)
+                                    continue;
+                                if (x1 >= result.rows)
+                                    break;
+                                if (mask.at<uchar>(x1, j - distance) == 0) {
+                                    result.at<Vec3b>(i, j) = image.at<Vec3b>(x1, j - distance);
+                                    found = true;
+                                    break;
+                                }
 
 
-            		
-            	}
+                            }
 
-            	
-                ////城市距离
-                //if(flag==1) {
-                //    bool found = false;
-                //    for (int distance = 1;; distance++) {
-                //        //上
-                //        if (i - distance >= 0) {
-                //            for (int y1 = i - distance; y1 <= i + distance; y1++) {
-                //                if (y1 < 0)
-                //                    continue;
-                //                if (y1 >= result.cols)
-                //                    break;
-                //                if (mask.at<uchar>(i - distance, y1) == 0) {
-                //                    result.at<Vec3b>(i, j) = image.at<Vec3b>(i - distance, y1);
-                //                    found = true;
-                //                    break;
-                //                }
-                //            }
-                //        }
-                //        if (found)
-                //            break;
-                //        //下
-                //        if (i + distance < result.rows) {
-                //            for (int y2 = i - distance; y2 <= i + distance; y2++) {
-                //                if (y2 < 0)
-                //                    continue;
-                //                if (y2 >= result.cols)
-                //                    break;
-                //                if (mask.at<uchar>(i + distance, y2) == 0) {
-                //                    result.at<Vec3b>(i, j) = image.at<Vec3b>(i + distance, y2);
-                //                    found = true;
-                //                    break;
-                //                }
-                //            }
-                //        }
-                //        if (found)
-                //            break;
-                //        //右
-                //        if (j + distance < result.cols) {
-                //            for (int x2 = i - distance + 1; x2 <= i + distance - 1; x2++) {
-                //                if (x2 < 0)
-                //                    continue;
-                //                if (x2 >= result.rows)
-                //                    break;
-                //                if (mask.at<uchar>(x2, j + distance) == 0) {
-                //                    result.at<Vec3b>(i, j) = image.at<Vec3b>(x2, j + distance);
-                //                    found = true;
-                //                    break;
-                //                }
-                //            }
-                //        }
-                //        if (found)
-                //            break;
-                //        //左
-                //        if (j - distance >= 0) {
-                //            for (int x1 = i - distance + 1; x1 <= i + distance - 1; x1++) {
-                //                if (x1 < 0)
-                //                    continue;
-                //                if (x1 >= result.rows)
-                //                    break;
-                //                if (mask.at<uchar>(x1, j - distance) == 0) {
-                //                    result.at<Vec3b>(i, j) = image.at<Vec3b>(x1, j - distance);
-                //                    found = true;
-                //                    break;
-                //                }
-                //            }
-                //        }
-                //        if (found)
-                //            break;
-                //	
-                //}
-                //}
+                        }
+                        if (found)
+                            break;
+                	
+                }
+
+                }
 
             }
         }
@@ -250,6 +253,28 @@ Mat interpolation_nearest(const Mat&image, const Mat& mask,int flag) {
 
 
 Mat interpolation(const Mat& image, const Mat& mask, int flag) {
+    if (image.size != mask.size) {
+        cout << "size does not match" << endl;
+    }
+
+    Mat result = image.clone();
+
+    for (int i = 0; i < result.rows; i++) {
+        for (int j = 0; j < result.cols; j++) {
+            if (mask.at<uchar>(i, j) == 255) {
+
+
+
+            }
+        }
+    }
+    return result;
+}
+
+
+Mat interpolation_bilinear(const Mat& image, const Mat& mask, int flag) {
+    cout << "rbf interpolating ..." << endl;
+	
     if (image.size != mask.size) {
         cout << "size does not match" << endl;
     }
