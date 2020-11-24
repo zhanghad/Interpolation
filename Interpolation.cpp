@@ -397,7 +397,7 @@ Mat interpolation_bilinear(const Mat& image, const Mat& mask_in) {
                     }
                 }
             }
-
+             
         	//判断邻域数量
         	if(int ne=(neighbor.size())>=3) {
                 //求平均
