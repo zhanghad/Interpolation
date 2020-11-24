@@ -13,10 +13,9 @@ double metric_MSE(const Mat& original, const cv::Mat& processed);
 double metric_PSNR(const Mat& original, const cv::Mat& processed);
 double metric_SSIM(const Mat& imgx, const Mat& imgy);
 
-Mat interpolation_nearest(const Mat& image, const Mat& mask,int flag);
+Mat interpolation_nearest(const Mat& image, const Mat& mask,int flag);//flag=0为8邻域 flag=1为4邻域
 Mat interpolation_rbf(const Mat& image, const Mat& mask, int flag, int neighbor_distance=1);
-Mat interpolation_bilinear(const Mat& image, const Mat& mask);
-Mat interpolation_bilinear_old(const Mat& image, const Mat& mask);
+Mat interpolation_bilinear(const Mat& image, const Mat& mask, int flag);//flag=0为8邻域 flag=1为4邻域
 
 
 void test();
@@ -41,74 +40,59 @@ int main()
 
     
     //task 1 Random scribbles
-	//for(int index = 1;index<=4;index++) {
- //       cout << "image " << to_string(index) << " scribbles" << endl;
-	//	
-	//	//读取原图
- //       Mat img_src = imread(image_src_dir + to_string(index) + ".bmp");
- //       Mat img_damage = imread(image_damage_dir + "scribbles/" + to_string(index) + "_scribbles_1.bmp");
- //       Mat img_mask = getScribbleMask(img_src, img_damage);
-
- //       imshow("img_src", img_src);
- //       imshow("img_damage", img_damage);
- //       imshow("img_mask", img_mask);
- //       //waitKey();
-
- //       //Mat img_result_near = interpolation_nearest(img_damage, img_mask, 0);//8邻域
- //       //Mat img_result_near_1 = interpolation_nearest(img_damage, img_mask, 1);//4邻域
- //       Mat img_result_bilinear = interpolation_bilinear(img_damage, img_mask);
- //       Mat img_result_bilinear_old = interpolation_bilinear_old(img_damage, img_mask);
-	//	
- //       //Mat img_result_rbf = interpolation_rbf(img_damage, img_mask, 1, 10);
-
- //       //imshow("img_result_near", img_result_near);
- //       //imshow("img_result_near_1", img_result_near_1);
- //       imshow("img_result_bilinear", img_result_bilinear);
- //       imshow("img_result_bilinear_old", img_result_bilinear_old);
- //       //imshow("img_result_rbf", img_result_rbf);
- //       waitKey();
-	//	
-	//	//保存结果
-	//	
-	//}
+	for(int index = 1;index<=4;index++) {
+        cout << "image " << to_string(index) << " scribbles" << endl;
+		
+		//读取原图
+        Mat img_src = imread(image_src_dir + to_string(index) + ".bmp");
+        Mat img_damage = imread(image_damage_dir + "scribbles/" + to_string(index) + "_scribbles_1.bmp");
+        Mat img_mask = getScribbleMask(img_src, img_damage);
+        imshow("img_src", img_src);
+        imshow("img_damage", img_damage);
+        imshow("img_mask", img_mask);
+        //waitKey();
+        //Mat img_result_near = interpolation_nearest(img_damage, img_mask, 0);//8邻域
+        //Mat img_result_near_1 = interpolation_nearest(img_damage, img_mask, 1);//4邻域
+        Mat img_result_bilinear = interpolation_bilinear(img_damage, img_mask,0);//8邻域
+		
+        //Mat img_result_rbf = interpolation_rbf(img_damage, img_mask, 1, 10);
+        //imshow("img_result_near", img_result_near);
+        //imshow("img_result_near_1", img_result_near_1);
+        imshow("img_result_bilinear", img_result_bilinear);
+        //imshow("img_result_rbf", img_result_rbf);
+        waitKey(0);
+		
+		//保存结果
+		
+	}
 
 
 
 
     //task 2 
-    for (int index = 1; index <= 4; index++) {
-        cout << "image " << to_string(index) << " loss" << endl;
-
-        //读取原图
-        Mat img_src = imread(image_src_dir + to_string(index) + ".bmp");
-        //Mat img_damage = imread(image_damage_dir + "scribbles/" + to_string(index) + "_scribbles_1.bmp");
-        //Mat img_mask = getScribbleMask(img_src, img_damage);
-
-        Mat img_damage;
-		Mat img_mask=deletePixel(img_src, img_damage, 0.50);//随机丢点
-
-        imshow("img_src", img_src);
-        imshow("img_damage", img_damage);
-        imshow("img_mask", img_mask);
-        //waitKey();
-
-        //Mat img_result_near = interpolation_nearest(img_damage, img_mask, 0);//8邻域
-        //Mat img_result_near_1 = interpolation_nearest(img_damage, img_mask, 1);//4邻域
-        Mat img_result_bilinear = interpolation_bilinear(img_damage, img_mask);
-        Mat img_result_bilinear_old = interpolation_bilinear_old(img_damage, img_mask);
-
-        //Mat img_result_rbf = interpolation_rbf(img_damage, img_mask, 1, 10);
-
-        //imshow("img_result_near", img_result_near);
-        //imshow("img_result_near_1", img_result_near_1);
-        imshow("img_result_bilinear", img_result_bilinear);
-        imshow("img_result_bilinear_old", img_result_bilinear_old);
-        //imshow("img_result_rbf", img_result_rbf);
-        waitKey();
-
-        //保存结果
-
-    }
+  //  for (int index = 1; index <= 4; index++) {
+  //      cout << "image " << to_string(index) << " loss" << endl;
+  //      
+  //      Mat img_src = imread(image_src_dir + to_string(index) + ".bmp");//读取原图
+  //      Mat img_damage;
+		//Mat img_mask=deletePixel(img_src, img_damage, 0.80);//随机丢点
+  //      imshow("img_src", img_src);
+  //      imshow("img_damage", img_damage);
+  //      imshow("img_mask", img_mask);
+  //      //waitKey();
+  //      Mat img_result_near = interpolation_nearest(img_damage, img_mask, 0);//8邻域
+  //      Mat img_result_near_1 = interpolation_nearest(img_damage, img_mask, 1);//4邻域
+  //      //Mat img_result_bilinear = interpolation_bilinear(img_damage, img_mask,0);
+  //      //Mat img_result_bilinear_old = interpolation_bilinear_old(img_damage, img_mask);
+  //      //Mat img_result_rbf = interpolation_rbf(img_damage, img_mask, 1, 10);
+  //      imshow("img_result_near", img_result_near);
+  //      imshow("img_result_near_1", img_result_near_1);
+  //      //imshow("img_result_bilinear", img_result_bilinear);
+  //      //imshow("img_result_bilinear_old", img_result_bilinear_old);
+  //      //imshow("img_result_rbf", img_result_rbf);
+  //      waitKey(0);
+  //      //保存结果
+  //  }
 
     
     //Mat img_damage = imread(imageDir + "damage/" + to_string(index) + ".bmp");
@@ -140,7 +124,6 @@ int main()
 
     //imwrite(imageDir + "result\\" + to_string(index) + "_near_2.bmp", img_result);
 
-    waitKey();
 }
 
 
@@ -250,6 +233,7 @@ Mat interpolation(const Mat& image, const Mat& mask, int flag) {
     return result;
 }
 
+
 //最近邻插值
 Mat interpolation_nearest(const Mat& image, const Mat& mask_in, int flag) {
     cout << "nearest interpolating ..." << endl;
@@ -261,7 +245,7 @@ Mat interpolation_nearest(const Mat& image, const Mat& mask_in, int flag) {
     Mat mask = mask_in.clone();
     vector<pair<int, int>> lost;
 
-
+    //统计所有待补点
     for (int i = 0; i < mask.rows; i++) {
         for (int j = 0; j < mask.cols; j++) {
             if (mask.at<uchar>(i, j) == 255) {
@@ -270,15 +254,17 @@ Mat interpolation_nearest(const Mat& image, const Mat& mask_in, int flag) {
         }
     }
 
+	//循环直至所有候补点全部被填充
     while (!lost.empty()) {
-        bool found = false;
     	
     	//遍历所有待补点
         for(auto it=lost.begin();it<lost.end(); ) {
+            vector<pair<int, int>> neighbor;
 
         	//遍历8邻域
         	for(int i=it->first-1;i<=it->first+1;i++) {
                 for(int j=it->second-1;j<=it->second+1;j++) {
+                	
                 	//越界判断
                     if(i<0||i>=result.rows||j<0||j>=result.cols||(i==it->first&&j==it->second))
                         continue;
@@ -288,25 +274,29 @@ Mat interpolation_nearest(const Mat& image, const Mat& mask_in, int flag) {
                 		if((i!=it->first)&&(j!=it->second))
                             continue;
                 	}
-                	
-                	//插值
-                    if(mask.at<uchar>(i,j)!=255) {
-                        result.at<Vec3b>(it->first, it->second) = result.at<Vec3b>(i, j);
-                        mask.at<uchar>(it->first, it->second) = 0;
-                        it = lost.erase(it);
-                        found = true;
-                    	break;
+
+                	//将存在的邻居综合
+                    if (mask.at<uchar>(i, j) != 255) {
+                        neighbor.push_back(pair<int, int>(i, j));
                     }
                 }
-        		if(found)
-                    break;
         	}
-            if (found) {
-                found = false;
+
+        	
+            //判断邻域数量
+            if (!neighbor.empty() ) {
+                //随机选一个邻居填入
+                int r = rand() % neighbor.size();//伪随机数(开销有点大)
+            	
+                result.at<Vec3b>(it->first, it->second) = result.at<Vec3b>(neighbor[r].first, neighbor[r].second);
+
+                mask.at<uchar>(it->first, it->second) = 0;//标记为已填
+                it = lost.erase(it);
             }
             else {
                 it++;
             }
+
         }
     }
 	
@@ -315,94 +305,7 @@ Mat interpolation_nearest(const Mat& image, const Mat& mask_in, int flag) {
 }
 
 //双线性插值
-Mat interpolation_bilinear_old(const Mat& image, const Mat& mask) {
-    cout << "bilinear interpolating ..." << endl;
-	
-    if (image.size != mask.size) {
-        cout << "size does not match" << endl;
-        return image;
-    }
-
-    Mat result = image.clone();
-
-    for (int i = 0; i < result.rows; i++) {
-        for (int j = 0; j < result.cols; j++) {
-            if (mask.at<uchar>(i, j) == 255) {
-                vector <Vec3b> pixels(4);
-                vector<int> distance(4, 1);
-                double distance_sum = 0;
-                vector<bool> found(4, false);
-                vector<double> weight(4, 0);
-            	
-
-            	//left
-                for (int t; t=(i-distance[0]) >=0; distance[0]++) {
-                    
-	                if(mask.at<uchar>(i, t)!=255) {
-                        pixels[0] = result.at<Vec3b>(i, t);
-                        found[0] = true;
-                        break;
-	                }
-                }
-
-            	//right
-                for (int t; t=(i+distance[1]) < result.cols; distance[1]++) {
-                    if (mask.at<uchar>(i, t) != 255) {
-                        pixels[1] = result.at<Vec3b>(i, t);
-                        found[1] = true;
-                        break;
-                    }
-                }
-
-            	//top
-                for (int t; t=(j- distance[2]) >=0; distance[2]++) {
-                    if (mask.at<uchar>(t, j) != 255) {
-                        pixels[2] = result.at<Vec3b>(t, j);
-                        found[2] = true;
-                        break;
-                    }
-                }
-
-
-            	//down
-                for (int t; t=(j + distance[3]) <result.rows; distance[3]++) {
-                    if (mask.at<uchar>(t, j) != 255) {
-                        pixels[3] = result.at<Vec3b>(t, j);
-                        found[3] = true;
-                        break;
-                    }
-                }
-
-            	for(int m=0;m<4;m++) {
-                    if(found[m]) {
-                        distance_sum += distance[m];
-                    }
-            	}
-
-                for (int m = 0; m < 4; m++) {
-                    if (found[m]) {
-                        weight[m] = distance[m] / distance_sum;
-                    }
-                    else {
-                        weight[m] = 0;
-                    }
-                }
-
-                Vec3b dst(0,0,0);
-                for (int m = 0; m < 4; m++) {
-                    dst += weight[m] * pixels[m];
-                }
-            	
-                result.at<Vec3b>(i, j) = dst;
-            }
-        }
-    }
-    return result;
-}
-
-
-//双线性插值
-Mat interpolation_bilinear(const Mat& image, const Mat& mask_in) {
+Mat interpolation_bilinear(const Mat& image, const Mat& mask_in, int flag) {
     cout << "bilinear interpolating ..." << endl;
     if (image.size != mask_in.size) {
         cout << "size does not match" << endl;
@@ -421,6 +324,7 @@ Mat interpolation_bilinear(const Mat& image, const Mat& mask_in) {
         }
     }
 
+    //循环直至所有候补点全部被填充
     while (!lost.empty()) {
 
         //遍历所有待补点
@@ -436,31 +340,34 @@ Mat interpolation_bilinear(const Mat& image, const Mat& mask_in) {
                     if (i < 0 || i >= result.rows || j < 0 || j >= result.cols || (i == it->first && j == it->second))
                         continue;
 
+                    //改为4邻域
+                    if (flag == 1) {
+                        if ((i != it->first) && (j != it->second))
+                            continue;
+                    }
 
-                	
                     if (mask.at<uchar>(i, j) != 255) {
                         neighbor.push_back(pair<int, int>(i, j));
                     }
                 }
             }
-             
+            
         	//判断邻域数量
-        	if(int ne=(neighbor.size())>=3) {
+            int ne = neighbor.size();
+        	if(neighbor.size()>=4) {
                 //求平均
                 vector<int> sum(3, 0);
-                for(auto it2=neighbor.begin();it2<neighbor.end();it2++) {
-
+                for(auto it2=neighbor.begin();it2<neighbor.end();++it2) {
                 	for(int m=0;m<3;m++) {
                         sum[m] += result.at<Vec3b>(it2->first, it2->second)[m];
                 	}
-
                 }
                 result.at<Vec3b>(it->first, it->second) = Vec3b(sum[0]/ne , sum[1]/ne, sum[2]/ne);
         		
                 mask.at<uchar>(it->first, it->second) = 0;
                 it = lost.erase(it);
         	}else {
-                it++;
+                ++it;
         	}
 
         }
@@ -668,15 +575,17 @@ void test2(){
 }
 
 void test3() {
-    vector<int>test(8);
-    for (int i = 0; i < 8; i++)
-        test[i] = i;
 
-	for(auto it =test.begin();it<test.end();it++) {
-
-		if(*it==3) {
-            it = test.erase(it);
-		}
-	}
+    //for (int i = 0; i < 100; i++)
+    //    cout << rand() << endl;
+	
+ //   vector<int>test(8);
+ //   for (int i = 0; i < 8; i++)
+ //       test[i] = i;
+	//for(auto it =test.begin();it<test.end();it++) {
+	//	if(*it==3) {
+ //           it = test.erase(it);
+	//	}
+	//}
 	
 }
