@@ -1,4 +1,5 @@
-﻿#include <opencv.hpp>
+﻿//张浩东 3018201404
+#include <opencv.hpp>
 #include <string>
 #include <vector>
 #include "rbf.h"
@@ -14,43 +15,78 @@ double metric_SSIM(const Mat& imgx, const Mat& imgy);
 
 Mat interpolation_nearest(const Mat& image, const Mat& mask,int flag);
 Mat interpolation_rbf(const Mat& image, const Mat& mask, int flag, int neighbor_distance=1);
+Mat interpolation_bilinear(const Mat& image, const Mat& mask);
 
 
 void test();
 void test2();
+void test3();
 
 int main()
 {
     //test2();	
     //test();
+    //test3();
     
-    string image_dir = "image/";
+    //string image_dir = "image/";
     //for(int i=1;i<=4;i++) {
     //    cv::Mat image=cv::imread(imageDir + "test\\" + std::to_string(i) + ".jpg");
     //    cv::imwrite(imageDir + "test\\" + std::to_string(i) + ".bmp",image);
     //}
 
+    string image_src_dir = "image/original/";
+    string image_damage_dir = "image/damage/";
+    string image_reult_dir = "image/result/";
 
-    int index = 1;
-    Mat img_src = imread(image_dir + "test/" + to_string(index) + ".bmp");
+    
+    //task 1 Random scribbles
+	for(int index = 1;index<=4;index++) {
+        cout << "image " << to_string(index) << " scribbles" << endl;
+		
+		//读取原图
+        Mat img_src = imread(image_src_dir + to_string(index) + ".bmp");
+        Mat img_damage = imread(image_damage_dir + "scribbles/" + to_string(index) + "_scribbles_1.bmp");
+        Mat img_mask = getScribbleMask(img_src, img_damage);
+
+        imshow("img_src", img_src);
+        imshow("img_damage", img_damage);
+        imshow("img_mask", img_mask);
+        //waitKey();
+
+        Mat img_result_near = interpolation_nearest(img_damage, img_mask, 1);
+        //Mat img_result_bilinear = interpolation_bilinear(img_damage, img_mask);
+        //Mat img_result_rbf = interpolation_rbf(img_damage, img_mask, 1, 10);
+
+        imshow("img_result_near", img_result_near);
+        //imshow("img_result_bilinear", img_result_bilinear);
+        //imshow("img_result_rbf", img_result_rbf);
+        waitKey();
+		
+		//保存结果
+		
+	}
+
+    
     //Mat img_damage = imread(imageDir + "damage/" + to_string(index) + ".bmp");
     //Mat img_mask = getScribbleMask(img_src, img_damage);
 	
-    Mat img_lost;
-	Mat img_lost_mask=deletePixel(img_src, img_lost, 0.90);//随机丢点
+ //   Mat img_lost;
+	//Mat img_lost_mask=deletePixel(img_src, img_lost, 0.50);//随机丢点
 
     //Mat img_result = interpolation_nearest(img_damage, img_mask, 1);
-    Mat img_result=interpolation_rbf(img_lost, img_lost_mask, 1,10);
+	//Mat img_result = interpolation_nearest(img_lost, img_lost_mask, 1);
+    //Mat img_result = interpolation_bilinear(img_lost, img_lost_mask);
+    //Mat img_result=interpolation_rbf(img_lost, img_lost_mask, 1,10);
 	
     //Mat img_result = interpolation_nearest(img_lost, img_lost_mask, 1);
     
-    imshow("img_result", img_result);
-    imshow("img_src", img_src);
+    //imshow("img_result", img_result);
+    //imshow("img_src", img_src);
     //imshow("img_damage", img_damage);
     //imshow("img_mask", img_mask);
-    imshow("img_lost", img_lost);
-    imshow("img_lost_mask", img_lost_mask);
-    waitKey();
+    //imshow("img_lost", img_lost);
+    //imshow("img_lost_mask", img_lost_mask);
+    //waitKey();
 
 	
     //cout << metric_MSE(img_src, img_damage)<<endl;
@@ -148,105 +184,61 @@ double metric_SSIM(const Mat& imgx, const Mat& imgy) {
 }
 
 
-
 //最近邻插值
-Mat interpolation_nearest(const Mat&image, const Mat& mask,int flag) {
-    if(image.size!=mask.size) {
+Mat interpolation_nearest(const Mat& image, const Mat& mask_in, int flag) {
+    cout << "nearest interpolating ..." << endl;
+    if (image.size != mask_in.size) {
         cout << "size does not match" << endl;
+        return image;
     }
-	
     Mat result = image.clone();
-
-	for(int i=0;i<result.rows;i++) {
-        for (int j = 0; j < result.cols; j++) {
-            if(mask.at<uchar>(i,j)==255) {
-                //城市距离
-                if(flag==1) {
-                    bool found = false;
-                	//由近至远寻找
-                    for (int distance = 1;; distance++) {
-                        //上
-                        if (i - distance >= 0) {
-                            for (int y1 = i - distance; y1 <= i + distance; y1++) {
-                                if (y1 < 0)
-                                    continue;
-                                if (y1 >= result.cols)
-                                    break;
-                                if (mask.at<uchar>(i - distance, y1) == 0) {
-                                    result.at<Vec3b>(i, j) = image.at<Vec3b>(i - distance, y1);
-                                    found = true;
-                                    break;
-                                }
-
-                            }
-                        }
-                        if (found)
-                            break;
-
-                        //下
-                        if (i + distance < result.rows) {
-                            for (int y2 = i - distance; y2 <= i + distance; y2++) {
-                                if (y2 < 0)
-                                    continue;
-                                if (y2 >= result.cols)
-                                    break;
-                                if (mask.at<uchar>(i + distance, y2) == 0) {
-                                    result.at<Vec3b>(i, j) = image.at<Vec3b>(i + distance, y2);
-                                    found = true;
-                                    break;
-                                }
-
-                            }
-                        }
-                        if (found)
-                            break;
-
-                        //右
-                        if (j + distance < result.cols) {
-                            for (int x2 = i - distance + 1; x2 <= i + distance - 1; x2++) {
-                                if (x2 < 0)
-                                    continue;
-                                if (x2 >= result.rows)
-                                    break;
-                                if (mask.at<uchar>(x2, j + distance) == 0) {
-                                    result.at<Vec3b>(i, j) = image.at<Vec3b>(x2, j + distance);
-                                    found = true;
-                                    break;
-                                }
-
-                            }
-
-                        }
-                        if (found)
-                            break;
-
-                        //左
-                        if (j - distance >= 0) {
-                            for (int x1 = i - distance + 1; x1 <= i + distance - 1; x1++) {
-                                if (x1 < 0)
-                                    continue;
-                                if (x1 >= result.rows)
-                                    break;
-                                if (mask.at<uchar>(x1, j - distance) == 0) {
-                                    result.at<Vec3b>(i, j) = image.at<Vec3b>(x1, j - distance);
-                                    found = true;
-                                    break;
-                                }
+    Mat mask = mask_in.clone();
+    vector<pair<int, int>> lost;
 
 
-                            }
-
-                        }
-                        if (found)
-                            break;
-                	
-                }
-
-                }
-
+    for (int i = 0; i < mask.rows; i++) {
+        for (int j = 0; j < mask.cols; j++) {
+            if (mask.at<uchar>(i, j) == 255) {
+                lost.push_back(pair<int, int>(i, j));
             }
         }
-	}
+    }
+
+    while (!lost.empty()) {
+        bool found = false;
+    	
+    	//遍历所有待补点
+        for(auto it=lost.begin();it<lost.end(); ) {
+
+        	//遍历8邻域
+        	for(int i=it->first-1;i<=it->first+1;i++) {
+                for(int j=it->second-1;j<=it->second+1;j++) {
+
+                	//越界判断
+                    if(i<0||i>=result.rows||j<0||j>=result.cols||(i==it->first&&j==it->second))
+                        continue;
+                    if(mask.at<uchar>(i,j)!=255) {
+                        result.at<Vec3b>(it->first, it->second) = result.at<Vec3b>(i, j);
+                        mask.at<uchar>(it->first, it->second) = 0;
+                        it = lost.erase(it);
+                        found = true;
+                    	break;
+                    }
+                }
+
+        		if(found)
+                    break;
+        	}
+
+            if (found) {
+                found = false;
+            }
+            else {
+                it++;
+            }
+        }
+    }
+	
 
     return result;
 }
@@ -255,6 +247,7 @@ Mat interpolation_nearest(const Mat&image, const Mat& mask,int flag) {
 Mat interpolation(const Mat& image, const Mat& mask, int flag) {
     if (image.size != mask.size) {
         cout << "size does not match" << endl;
+        return image;
     }
 
     Mat result = image.clone();
@@ -271,12 +264,13 @@ Mat interpolation(const Mat& image, const Mat& mask, int flag) {
     return result;
 }
 
-
-Mat interpolation_bilinear(const Mat& image, const Mat& mask, int flag) {
-    cout << "rbf interpolating ..." << endl;
+//双线性插值
+Mat interpolation_bilinear(const Mat& image, const Mat& mask) {
+    cout << "bilinear interpolating ..." << endl;
 	
     if (image.size != mask.size) {
         cout << "size does not match" << endl;
+        return image;
     }
 
     Mat result = image.clone();
@@ -284,9 +278,72 @@ Mat interpolation_bilinear(const Mat& image, const Mat& mask, int flag) {
     for (int i = 0; i < result.rows; i++) {
         for (int j = 0; j < result.cols; j++) {
             if (mask.at<uchar>(i, j) == 255) {
+                vector <Vec3b> pixels(4);
+                vector<int> distance(4, 1);
+                double distance_sum = 0;
+                vector<bool> found(4, false);
+                vector<double> weight(4, 0);
+            	
+
+            	//left
+                for (int t; t=(i-distance[0]) >=0; distance[0]++) {
+                    
+	                if(mask.at<uchar>(i, t)!=255) {
+                        pixels[0] = result.at<Vec3b>(i, t);
+                        found[0] = true;
+                        break;
+	                }
+                }
+
+            	//right
+                for (int t; t=(i+distance[1]) < result.cols; distance[1]++) {
+                    if (mask.at<uchar>(i, t) != 255) {
+                        pixels[1] = result.at<Vec3b>(i, t);
+                        found[1] = true;
+                        break;
+                    }
+                }
+
+            	//top
+                for (int t; t=(j- distance[2]) >=0; distance[2]++) {
+                    if (mask.at<uchar>(t, j) != 255) {
+                        pixels[2] = result.at<Vec3b>(t, j);
+                        found[2] = true;
+                        break;
+                    }
+                }
 
 
+            	//down
+                for (int t; t=(j + distance[3]) <result.rows; distance[3]++) {
+                    if (mask.at<uchar>(t, j) != 255) {
+                        pixels[3] = result.at<Vec3b>(t, j);
+                        found[3] = true;
+                        break;
+                    }
+                }
 
+            	for(int m=0;m<4;m++) {
+                    if(found[m]) {
+                        distance_sum += distance[m];
+                    }
+            	}
+
+                for (int m = 0; m < 4; m++) {
+                    if (found[m]) {
+                        weight[m] = distance[m] / distance_sum;
+                    }
+                    else {
+                        weight[m] = 0;
+                    }
+                }
+
+                Vec3b dst(0,0,0);
+                for (int m = 0; m < 4; m++) {
+                    dst += weight[m] * pixels[m];
+                }
+            	
+                result.at<Vec3b>(i, j) = dst;
             }
         }
     }
@@ -299,6 +356,7 @@ Mat interpolation_rbf(const Mat& image, const Mat& mask, int flag,int neighbor_d
 	
     if (image.size != mask.size) {
         cout << "size does not match" << endl;
+        return image;
     }
     Mat result = image.clone();
 
@@ -322,8 +380,6 @@ Mat interpolation_rbf(const Mat& image, const Mat& mask, int flag,int neighbor_d
                             continue;
                         if (mask.at<uchar>(x, y) != 255)
                             exist_count++;
-                        //else
-                        //    pre_count++;
 
                     }
                 }
@@ -333,7 +389,6 @@ Mat interpolation_rbf(const Mat& image, const Mat& mask, int flag,int neighbor_d
                     cout << "neighbor distance is too small" << endl;
             		break;
             	}
-                    
 
             	//分配矩阵
                 MatrixXd exist_pos(exist_count,2);
@@ -346,15 +401,12 @@ Mat interpolation_rbf(const Mat& image, const Mat& mask, int flag,int neighbor_d
                 exist_value.push_back(exist_g_value);
                 exist_value.push_back(exist_r_value);
             	
-			    //MatrixXd pre_pos(pre_count,2);
                 MatrixXd pre_pos(1, 2);
 			    MatrixXd pre_value;
 
                 pre_pos << i, j;
-            	
 
                 int index_exist = 0;
-				//int index_pre = 0;
 
             	//填充矩阵
                 for (int x = i - neighbor_distance; x < i + neighbor_distance; x++) {
@@ -373,11 +425,6 @@ Mat interpolation_rbf(const Mat& image, const Mat& mask, int flag,int neighbor_d
                             exist_value[2](index_exist, 0) = result.at<Vec3b>(x, y)[2];
                             index_exist++;
                         }   
-                        //else {
-                        //    pre_pos(index_pre, 0) = x;
-                        //    pre_pos(index_pre, 1) = y;
-                        //    index_pre++;
-                        //}
 
                     }
                 }
@@ -498,4 +545,18 @@ void test2(){
 	
     cout << (m1 - m2).cwiseAbs().maxCoeff() << endl;
 
+}
+
+void test3() {
+    vector<int>test(8);
+    for (int i = 0; i < 8; i++)
+        test[i] = i;
+
+	for(auto it =test.begin();it<test.end();it++) {
+
+		if(*it==3) {
+            it = test.erase(it);
+		}
+	}
+	
 }
